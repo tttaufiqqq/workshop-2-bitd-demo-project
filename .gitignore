@@ -1,0 +1,25 @@
+# ============================================================
+# NEVER commit config.php with real IPs or passwords.
+# The committed version must always use 100.x.x.x placeholders.
+# ============================================================
+config.php
+
+# Claude Code working files — never in version history
+CLAUDE.md
+COVERAGE_GAPS.md
+PRIORITY_QUEUE.md
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# PHP error logs
+php_errors.log
+error_log
