@@ -28,22 +28,22 @@ if (!$summaryError) {
     try { $pdoB = getMySQLConnection();   } catch (Exception $e) { $nodeBError = $e->getMessage(); }
 
     foreach ($summary as &$row) {
-        // Node A: look up email by user_id
+        // Node A: look up email by student_id
         if ($pdoA) {
-            $stmt = $pdoA->prepare("SELECT email FROM users WHERE id = :id");
-            $stmt->execute([':id' => $row['user_id']]);
+            $stmt = $pdoA->prepare("SELECT email FROM students WHERE student_id = :sid");
+            $stmt->execute([':sid' => $row['student_id']]);
             $userRow       = $stmt->fetch();
             $row['email']  = $userRow ? $userRow['email'] : '(not found)';
         } else {
             $row['email'] = '(Node A unavailable)';
         }
 
-        // Node B: look up most recent order by user_id
+        // Node B: look up most recent order by student_id
         if ($pdoB) {
             $stmt = $pdoB->prepare(
-                "SELECT item_name, ordered_at FROM orders WHERE user_id = :id ORDER BY ordered_at DESC LIMIT 1"
+                "SELECT item_name, ordered_at FROM orders WHERE student_id = :sid ORDER BY ordered_at DESC LIMIT 1"
             );
-            $stmt->execute([':id' => $row['user_id']]);
+            $stmt->execute([':sid' => $row['student_id']]);
             $orderRow             = $stmt->fetch();
             $row['last_item']     = $orderRow ? $orderRow['item_name']  : 'No orders';
             $row['last_order_at'] = $orderRow ? $orderRow['ordered_at'] : '-';
@@ -107,7 +107,7 @@ if (!$summaryError) {
 <div class="callout">
     <strong>App-level JOIN:</strong> This page does what a SQL JOIN does — but across three servers.
     Node C provides the pre-aggregated summary, then PHP loops through each row to fetch the matching
-    email from Node A and the most recent order from Node B by <code>user_id</code>.
+    email from Node A and the most recent order from Node B by <code>student_id</code>.
     Notice that <code>order_summary</code> also stores <code>user_name</code> directly: if Node A is
     down, the name column is still readable from that denormalised copy — a deliberate tradeoff between
     consistency and availability.

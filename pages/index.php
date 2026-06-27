@@ -10,14 +10,14 @@ require_once __DIR__ . '/../includes/db_mysql.php';
 require_once __DIR__ . '/../includes/db_postgres.php';
 require_once __DIR__ . '/../includes/styles.php';
 
-$users = []; $usersError = null;
-$orders = []; $ordersError = null;
-$summary = []; $summaryError = null;
+$students = []; $studentsError = null;
+$orders   = []; $ordersError   = null;
+$summary  = []; $summaryError  = null;
 
 try {
-    $pdoA  = getMariaDBConnection();
-    $users = $pdoA->query("SELECT * FROM users ORDER BY created_at DESC LIMIT 5")->fetchAll();
-} catch (Exception $e) { $usersError = $e->getMessage(); }
+    $pdoA     = getMariaDBConnection();
+    $students = $pdoA->query("SELECT * FROM students ORDER BY created_at DESC LIMIT 5")->fetchAll();
+} catch (Exception $e) { $studentsError = $e->getMessage(); }
 
 try {
     $pdoB   = getMySQLConnection();
@@ -50,18 +50,21 @@ try {
     <div class="card">
         <div class="card-label">Node A &middot; <?= DB_A_HOST ?></div>
         <div class="card-title">
-            <span class="status-dot <?= $usersError ? 'dot-err' : 'dot-ok' ?>"></span>
-            <span class="badge badge-a">MariaDB</span> Users
+            <span class="status-dot <?= $studentsError ? 'dot-err' : 'dot-ok' ?>"></span>
+            <span class="badge badge-a">MariaDB</span> Students
         </div>
-        <?php if ($usersError): ?>
-            <div class="alert alert-err">❌ <?= htmlspecialchars($usersError) ?></div>
-        <?php elseif (empty($users)): ?>
-            <p class="empty">No users yet. <a href="register.php">Register one →</a></p>
+        <?php if ($studentsError): ?>
+            <div class="alert alert-err">❌ <?= htmlspecialchars($studentsError) ?></div>
+        <?php elseif (empty($students)): ?>
+            <p class="empty">No students yet. <a href="register.php">Register one →</a></p>
         <?php else: ?>
             <table>
-                <tr><th>ID</th><th>Name</th><th>Student ID</th></tr>
-                <?php foreach ($users as $u): ?>
-                <tr><td><?= $u['id'] ?></td><td><?= htmlspecialchars($u['name']) ?></td><td><?= htmlspecialchars($u['student_id']) ?></td></tr>
+                <tr><th>Student ID</th><th>Name</th></tr>
+                <?php foreach ($students as $s): ?>
+                <tr>
+                    <td><?= htmlspecialchars($s['student_id']) ?></td>
+                    <td><?= htmlspecialchars($s['name']) ?></td>
+                </tr>
                 <?php endforeach; ?>
             </table>
         <?php endif; ?>
@@ -79,9 +82,13 @@ try {
             <p class="empty">No orders yet. <a href="orders.php">Place one →</a></p>
         <?php else: ?>
             <table>
-                <tr><th>ID</th><th>Item</th><th>Status</th></tr>
+                <tr><th>Order ID</th><th>Item</th><th>Status</th></tr>
                 <?php foreach ($orders as $o): ?>
-                <tr><td><?= $o['id'] ?></td><td><?= htmlspecialchars($o['item_name']) ?></td><td><?= htmlspecialchars($o['status']) ?></td></tr>
+                <tr>
+                    <td><?= htmlspecialchars($o['order_id']) ?></td>
+                    <td><?= htmlspecialchars($o['item_name']) ?></td>
+                    <td><?= htmlspecialchars($o['status']) ?></td>
+                </tr>
                 <?php endforeach; ?>
             </table>
         <?php endif; ?>
@@ -99,9 +106,13 @@ try {
             <p class="empty">No report data yet.</p>
         <?php else: ?>
             <table>
-                <tr><th>User</th><th>Orders</th><th>Spent</th></tr>
+                <tr><th>Student</th><th>Orders</th><th>Spent</th></tr>
                 <?php foreach ($summary as $s): ?>
-                <tr><td><?= htmlspecialchars($s['user_name']) ?></td><td><?= $s['total_orders'] ?></td><td>RM <?= number_format($s['total_spent'], 2) ?></td></tr>
+                <tr>
+                    <td><?= htmlspecialchars($s['user_name']) ?></td>
+                    <td><?= $s['total_orders'] ?></td>
+                    <td>RM <?= number_format((float)$s['total_spent'], 2) ?></td>
+                </tr>
                 <?php endforeach; ?>
             </table>
         <?php endif; ?>

@@ -1,6 +1,6 @@
 <?php
 // pages/register.php
-// Writes a new user to Node A (MariaDB)
+// Writes a new student to Node A (MariaDB)
 // Demonstrates: INSERT with PDO prepared statements + cross-node data flow
 
 require_once __DIR__ . '/../config.php';
@@ -22,9 +22,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } else {
         try {
             $pdo  = getMariaDBConnection();
-            $stmt = $pdo->prepare("INSERT INTO users (name, email, student_id) VALUES (:name, :email, :student_id)");
-            $stmt->execute([':name' => $name, ':email' => $email, ':student_id' => $student_id]);
-            $message = "User registered! ID = " . $pdo->lastInsertId() . " (Node A — MariaDB at " . DB_A_HOST . ")";
+            $stmt = $pdo->prepare("INSERT INTO students (student_id, name, email) VALUES (:student_id, :name, :email)");
+            $stmt->execute([':student_id' => $student_id, ':name' => $name, ':email' => $email]);
+            $message = "Student {$student_id} registered on Node A (MariaDB at " . DB_A_HOST . ").";
         } catch (PDOException $e) {
             $error = $e->getCode() === '23000'
                 ? "Email or Student ID already exists."
@@ -33,12 +33,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-$users = [];
+$students = [];
 try {
-    $pdo   = getMariaDBConnection();
-    $users = $pdo->query("SELECT * FROM users ORDER BY created_at DESC")->fetchAll();
+    $pdo      = getMariaDBConnection();
+    $students = $pdo->query("SELECT * FROM students ORDER BY created_at DESC")->fetchAll();
 } catch (Exception $e) {
-    $error = $error ?? "Cannot load users: " . $e->getMessage();
+    $error = $error ?? "Cannot load students: " . $e->getMessage();
 }
 ?>
 <!DOCTYPE html>
@@ -54,8 +54,8 @@ try {
 
 <div class="page-header">
     <div class="badges"><span class="badge badge-a">Node A — MariaDB</span></div>
-    <h1>Register New User</h1>
-    <p>Creates a student record on Node A (<?= DB_A_HOST ?>). This node stores all user identity data.</p>
+    <h1>Register New Student</h1>
+    <p>Creates a student record on Node A (<?= DB_A_HOST ?>). This node stores all student identity data.</p>
 </div>
 
 <?php if ($message): ?><div class="alert alert-ok">✅ <?= htmlspecialchars($message) ?></div><?php endif; ?>
@@ -79,19 +79,18 @@ try {
     </form>
 </div>
 
-<h2 class="section-title">All Registered Users</h2>
-<?php if (empty($users)): ?>
-    <p class="empty">No users yet.</p>
+<h2 class="section-title">All Registered Students</h2>
+<?php if (empty($students)): ?>
+    <p class="empty">No students yet.</p>
 <?php else: ?>
     <div class="card card-table">
         <table>
-            <tr><th>ID</th><th>Name</th><th>Email</th><th>Student ID</th><th>Registered</th></tr>
-            <?php foreach ($users as $u): ?>
+            <tr><th>Student ID</th><th>Name</th><th>Email</th><th>Registered</th></tr>
+            <?php foreach ($students as $u): ?>
             <tr>
-                <td><?= $u['id'] ?></td>
+                <td><?= htmlspecialchars($u['student_id']) ?></td>
                 <td><?= htmlspecialchars($u['name']) ?></td>
                 <td><?= htmlspecialchars($u['email']) ?></td>
-                <td><?= htmlspecialchars($u['student_id']) ?></td>
                 <td><?= $u['created_at'] ?></td>
             </tr>
             <?php endforeach; ?>

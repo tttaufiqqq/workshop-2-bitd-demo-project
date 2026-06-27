@@ -1,7 +1,7 @@
 <?php
 // pages/orders.php
 // Places an order. Three-node write pattern:
-// Step 1: verify user on Node A (MariaDB)
+// Step 1: verify student on Node A (MariaDB)
 // Step 2: insert order on Node B (MySQL)
 // Step 3: sync summary to Node C (PostgreSQL) — best-effort
 
@@ -14,28 +14,28 @@ require_once __DIR__ . '/../includes/styles.php';
 $message = null; $warning = null; $error = null;
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $user_id   = trim($_POST['user_id']   ?? '');
-    $item_name = trim($_POST['item_name'] ?? '');
-    $quantity  = trim($_POST['quantity']  ?? '');
-    $price     = trim($_POST['price']     ?? '');
+    $student_id = trim($_POST['student_id'] ?? '');
+    $item_name  = trim($_POST['item_name']  ?? '');
+    $quantity   = trim($_POST['quantity']   ?? '');
+    $price      = trim($_POST['price']      ?? '');
 
-    if (!is_numeric($user_id) || (int)$user_id <= 0 || empty($item_name) ||
+    if (empty($student_id) || strlen($student_id) > 20 || empty($item_name) ||
         !is_numeric($quantity) || (int)$quantity < 1 ||
         !is_numeric($price) || (float)$price <= 0) {
-        $error = "All fields are required. User ID and quantity must be positive integers; price must be > 0.";
+        $error = "All fields are required. Quantity must be a positive integer; price must be > 0.";
     }
 
-    $user = null;
+    $student = null;
     if (!$error) {
-        // Step 1: Verify user exists on Node A (MariaDB)
+        // Step 1: Verify student exists on Node A (MariaDB)
         try {
             $pdoA = getMariaDBConnection();
-            $stmt = $pdoA->prepare("SELECT id, name FROM users WHERE id = :id");
-            $stmt->execute([':id' => (int)$user_id]);
-            $user = $stmt->fetch();
-            if (!$user) { $error = "User ID {$user_id} does not exist on Node A."; }
+            $stmt = $pdoA->prepare("SELECT student_id, name FROM students WHERE student_id = :sid");
+            $stmt->execute([':sid' => $student_id]);
+            $student = $stmt->fetch();
+            if (!$student) { $error = "Student ID {$student_id} does not exist on Node A."; }
         } catch (PDOException $e) {
-            $error = "Cannot verify user — Node A is unreachable: " . $e->getMessage();
+            $error = "Cannot verify student — Node A is unreachable: " . $e->getMessage();
         }
     }
 
@@ -44,9 +44,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         try {
             $pdoB = getMySQLConnection();
             $stmt = $pdoB->prepare(
-                "INSERT INTO orders (user_id, item_name, quantity, price) VALUES (:uid, :item, :qty, :price)"
+                "INSERT INTO orders (student_id, item_name, quantity, price) VALUES (:sid, :item, :qty, :price)"
             );
-            $stmt->execute([':uid' => (int)$user_id, ':item' => $item_name,
+            $stmt->execute([':sid' => $student_id, ':item' => $item_name,
                             ':qty' => (int)$quantity, ':price' => (float)$price]);
             $orderId = $pdoB->lastInsertId();
             $message = "Order #{$orderId} placed on Node B (MySQL).";
@@ -60,14 +60,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         try {
             $pdoC = getPostgresConnection();
             $stmt = $pdoC->prepare("
-                INSERT INTO order_summary (user_id, user_name, total_orders, total_spent)
-                VALUES (:uid, :uname, 1, :price)
-                ON CONFLICT (user_id) DO UPDATE
+                INSERT INTO order_summary (student_id, user_name, total_orders, total_spent)
+                VALUES (:sid, :uname, 1, :price)
+                ON CONFLICT (student_id) DO UPDATE
                 SET total_orders = order_summary.total_orders + 1,
                     total_spent  = order_summary.total_spent + EXCLUDED.total_spent,
                     last_updated = CURRENT_TIMESTAMP
             ");
-            $stmt->execute([':uid' => (int)$user_id, ':uname' => $user['name'], ':price' => (float)$price]);
+            $stmt->execute([':sid' => $student_id, ':uname' => $student['name'], ':price' => (float)$price]);
             $message .= " Summary synced to Node C (PostgreSQL).";
         } catch (PDOException $e) {
             $warning = "Order saved, but Node C sync failed: " . $e->getMessage();
@@ -105,8 +105,8 @@ try {
 
 <div class="card"><form method="POST">
     <div class="form-group">
-        <label class="form-label">User ID <small>must exist on Node A</small></label>
-        <input class="form-input" type="number" name="user_id" min="1" value="<?= htmlspecialchars($_POST['user_id'] ?? '') ?>" required>
+        <label class="form-label">Student ID <small>must exist on Node A</small></label>
+        <input class="form-input" type="text" name="student_id" placeholder="e.g. B032310001" value="<?= htmlspecialchars($_POST['student_id'] ?? '') ?>" required>
     </div>
     <div class="form-group">
         <label class="form-label">Item Name</label>
@@ -130,9 +130,9 @@ try {
     <p class="empty">No orders yet.</p>
 <?php else: ?>
     <div class="card card-table"><table>
-        <tr><th>ID</th><th>User</th><th>Item</th><th>Qty</th><th>Price</th><th>Ordered</th></tr>
+        <tr><th>Order ID</th><th>Student</th><th>Item</th><th>Qty</th><th>Price</th><th>Ordered</th></tr>
         <?php foreach ($recentOrders as $o): ?>
-        <tr><td><?= $o['id'] ?></td><td><?= $o['user_id'] ?></td><td><?= htmlspecialchars($o['item_name']) ?></td><td><?= $o['quantity'] ?></td><td>RM <?= number_format($o['price'], 2) ?></td><td><?= $o['ordered_at'] ?></td></tr>
+        <tr><td><?= $o['order_id'] ?></td><td><?= htmlspecialchars($o['student_id']) ?></td><td><?= htmlspecialchars($o['item_name']) ?></td><td><?= $o['quantity'] ?></td><td>RM <?= number_format($o['price'], 2) ?></td><td><?= $o['ordered_at'] ?></td></tr>
         <?php endforeach; ?>
     </table></div>
 <?php endif; ?>
