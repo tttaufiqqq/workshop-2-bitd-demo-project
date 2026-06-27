@@ -3,8 +3,8 @@
 // Shared CSS and navigation helper for all pages.
 //
 // Usage:
-//   In <head>: <?php renderStyles(); ?>
-//   In <body>: <?php renderNav('dashboard'); ?>
+//   In <head>: renderStyles();
+//   In <body>: renderNav('dashboard');
 //   Active key: 'dashboard' | 'register' | 'orders' | 'reports'
 
 function renderStyles(): void {
