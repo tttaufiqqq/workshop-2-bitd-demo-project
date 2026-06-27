@@ -101,6 +101,52 @@ over Tailscale and acts as the middle layer between the browser and the database
 The key point: each node runs independently. If Node B goes down, Node A and Node C are still
 reachable. The system degrades gracefully rather than failing completely.
 
+### What is Tailscale and Why Do We Need It?
+
+Each node in this project runs on a **different physical machine**. For PHP to connect to a
+database on another machine, that machine must be reachable over a **network** — specifically,
+it needs a stable IP address that PHP can dial into.
+
+The problem with normal Wi-Fi networks is that IP addresses change. When your laptop joins a
+different Wi-Fi network, it gets a new local IP. If your teammate's machine is on a completely
+different network (e.g. at home vs. at university), local IPs won't work at all — machines on
+separate networks cannot reach each other directly.
+
+**Tailscale solves this.** It creates a private **overlay network** (a virtual network on top of
+the internet) that connects all your machines as if they were plugged into the same router.
+Every machine on your Tailscale network gets a permanent `100.x.x.x` IP address that never
+changes, regardless of which Wi-Fi it is on.
+
+**Why not just use the university Wi-Fi IP?**
+Local IPs (e.g. `192.168.x.x`) only work when all machines are on the same network. The moment
+one teammate goes home or connects to a different hotspot, those IPs stop working. Tailscale IPs
+always work — over Wi-Fi, mobile data, or across countries.
+
+#### How to install Tailscale
+
+1. Go to [https://tailscale.com/download](https://tailscale.com/download) and download the
+   installer for your operating system (Windows, Linux, macOS).
+2. Install and sign in with a Google or GitHub account. Everyone in your group must sign in to
+   the **same Tailscale account (tailnet)** — or the admin must invite the others.
+3. Once connected, each machine appears in the Tailscale dashboard with a `100.x.x.x` IP.
+
+#### Verify the network is working with ping
+
+After all machines are connected to Tailscale, verify they can reach each other using `ping`.
+Open a terminal on the PHP web server machine and ping each node by its Tailscale IP:
+
+```bash
+ping 100.x.x.1   # Should get replies from Node A
+ping 100.x.x.2   # Should get replies from Node B
+ping 100.x.x.3   # Should get replies from Node C
+```
+
+If `ping` gets replies, the **network is working** and PHP will be able to open a database
+connection to that machine. If `ping` times out, the machine is either offline, not connected
+to Tailscale, or has a firewall blocking ICMP — fix this before touching `config.php`.
+
+> Full step-by-step Tailscale setup: [`setup/tailscale_guide.md`](setup/tailscale_guide.md)
+
 ---
 
 ## Setup — Read This In Order
