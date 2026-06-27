@@ -162,22 +162,49 @@ ping 100.x.x.x   # Tailscale IP of teammate's machine
 
 ### 2. Set Up Each Database Node
 
-Run the SQL file for each node **on the machine that hosts that DB**:
+Run the SQL file for each node **on the machine that hosts that DB**.
+
+Before importing, you need to **create a database first** inside your DBMS. You can name it
+anything you like — the SQL files will create the proper internal database name automatically,
+but your DBMS needs an entry point to connect to first.
+
+---
 
 **Node A — MariaDB (Linux machine):**
-```bash
-mysql -u root -p < db/node_a_mariadb.sql
+
+Open your MariaDB client and create a database, for example:
+```sql
+CREATE DATABASE IF NOT EXISTS workshop;
 ```
+Then import the schema from the terminal:
+```bash
+mysql -u root -p workshop < db/node_a_mariadb.sql
+```
+
+---
 
 **Node B — MySQL (Windows machine):**
+
+Open MySQL Workbench (or the MySQL command line) and create a database, for example:
+```sql
+CREATE DATABASE IF NOT EXISTS workshop;
+```
+Then import from Command Prompt:
 ```bash
-# In Command Prompt:
-mysql -u root -p < db\node_b_mysql.sql
+mysql -u root -p workshop < db\node_b_mysql.sql
 ```
 
+---
+
 **Node C — PostgreSQL (any machine):**
+
+Open pgAdmin or psql and create a database, for example:
+```sql
+CREATE DATABASE workshop;
+```
+Then connect to it and import:
 ```bash
-psql -U postgres -f db/node_c_postgres.sql
+psql -U postgres -d workshop -f db/node_c_postgres.sql
 ```
 
 > **PostgreSQL extra step:** You must also configure remote access.
