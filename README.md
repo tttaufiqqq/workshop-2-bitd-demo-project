@@ -43,35 +43,6 @@ device a stable `100.x.x.x` IP regardless of which Wi-Fi network it's on.
 
 ![ERD](docs/ERD.jpg)
 
-### What is a Node?
-
-A **node** in this project is a single machine running one database engine.
-Each node is a separate physical (or virtual) computer on the Tailscale network:
-
-| Node | Machine | Engine | Stores |
-|---|---|---|---|
-| Node A | Linux machine | MariaDB | Student identity — `STUDENTS` table |
-| Node B | Windows machine | MySQL | Order transactions — `ORDERS` table |
-| Node C | Any OS | PostgreSQL | Aggregated report cache — `ORDER_SUMMARY` table |
-
-**A "machine" can be anything that has a network connection and can run a database**, for example:
-
-- Your own laptop (e.g. Node A runs on your Windows laptop)
-- A teammate's laptop across the room or across the country
-- A VirtualBox or VMware VM running on your laptop (the VM counts as a separate machine)
-- A WSL2 (Windows Subsystem for Linux) instance on your Windows PC
-- A cloud VM (e.g. AWS EC2, Google Cloud, DigitalOcean droplet)
-- A Raspberry Pi on your desk
-
-For this demo, the simplest setup is **three teammates, each using their own laptop** — one runs
-MariaDB, one runs MySQL, one runs PostgreSQL. Tailscale connects them all.
-
-The PHP web server is **not** a node — it is a separate machine that connects to all three nodes
-over Tailscale and acts as the middle layer between the browser and the databases.
-
-The key point: each node runs independently. If Node B goes down, Node A and Node C are still
-reachable. The system degrades gracefully rather than failing completely.
-
 ### Cardinality Constraints
 
 The ERD shows two relationships between entities, each with its own participation rule.
@@ -100,6 +71,35 @@ This is a **1:0..1 (one to zero-or-one)** relationship. A student with no orders
 > `ORDER_SUMMARY.student_id` both point to `STUDENTS.student_id` on a completely different server
 > (Node A). The database engine cannot enforce this — PHP enforces it instead by querying Node A
 > to verify the student exists before writing to Node B or Node C.
+
+### What is a Node?
+
+A **node** in this project is a single machine running one database engine.
+Each node is a separate physical (or virtual) computer on the Tailscale network:
+
+| Node | Machine | Engine | Stores |
+|---|---|---|---|
+| Node A | Linux machine | MariaDB | Student identity — `STUDENTS` table |
+| Node B | Windows machine | MySQL | Order transactions — `ORDERS` table |
+| Node C | Any OS | PostgreSQL | Aggregated report cache — `ORDER_SUMMARY` table |
+
+**A "machine" can be anything that has a network connection and can run a database**, for example:
+
+- Your own laptop (e.g. Node A runs on your Windows laptop)
+- A teammate's laptop across the room or across the country
+- A VirtualBox or VMware VM running on your laptop (the VM counts as a separate machine)
+- A WSL2 (Windows Subsystem for Linux) instance on your Windows PC
+- A cloud VM (e.g. AWS EC2, Google Cloud, DigitalOcean droplet)
+- A Raspberry Pi on your desk
+
+For this demo, the simplest setup is **three teammates, each using their own laptop** — one runs
+MariaDB, one runs MySQL, one runs PostgreSQL. Tailscale connects them all.
+
+The PHP web server is **not** a node — it is a separate machine that connects to all three nodes
+over Tailscale and acts as the middle layer between the browser and the databases.
+
+The key point: each node runs independently. If Node B goes down, Node A and Node C are still
+reachable. The system degrades gracefully rather than failing completely.
 
 ---
 
@@ -137,9 +137,20 @@ psql -U postgres -f db/node_c_postgres.sql
 > **PostgreSQL extra step:** You must also configure remote access.
 > See [`docs/environment.md`](docs/environment.md) — "PostgreSQL Remote Access Configuration".
 
-### 3. Edit config.php
+### 3. Create config.php
 
-Open `config.php` and replace the placeholder IPs with your actual Tailscale IPs:
+`config.php` is gitignored and never committed (it holds real IPs and passwords).
+You must create it yourself by copying the example template:
+
+```bash
+# Windows
+copy config.example.php config.php
+
+# Linux / macOS
+cp config.example.php config.php
+```
+
+Then open `config.php` and replace the placeholder IPs with your actual Tailscale IPs:
 
 ```php
 define('DB_A_HOST', '100.x.x.1');   // ← Node A's Tailscale IP
@@ -147,7 +158,7 @@ define('DB_B_HOST', '100.x.x.2');   // ← Node B's Tailscale IP
 define('DB_C_HOST', '100.x.x.3');   // ← Node C's Tailscale IP
 ```
 
-> `config.php` is listed in `.gitignore`. Never commit it with real IPs.
+> `config.example.php` is the committed template. `config.php` is your local copy — never commit it.
 
 ### 4. Enable PHP Extensions
 
