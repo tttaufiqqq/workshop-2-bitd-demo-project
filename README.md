@@ -4,6 +4,8 @@ A PHP demo project showing how to build a system that reads and writes across
 **three separate database engines** (MariaDB, MySQL, PostgreSQL) running on
 **different machines** connected via **Tailscale**.
 
+> 📺 **Video walkthrough:** _link coming soon_ <!-- TODO: replace with YouTube URL once uploaded -->
+
 ---
 
 ## What This Demo Shows
@@ -34,6 +36,70 @@ node_a_users      node_b_orders       node_c_reports
 
 All three machines must be on **Tailscale** — a free VPN that gives each
 device a stable `100.x.x.x` IP regardless of which Wi-Fi network it's on.
+
+---
+
+## Entity Relationship Diagram
+
+![ERD](docs/ERD.jpg)
+
+### What is a Node?
+
+A **node** in this project is a single machine running one database engine.
+Each node is a separate physical (or virtual) computer on the Tailscale network:
+
+| Node | Machine | Engine | Stores |
+|---|---|---|---|
+| Node A | Linux machine | MariaDB | Student identity — `STUDENTS` table |
+| Node B | Windows machine | MySQL | Order transactions — `ORDERS` table |
+| Node C | Any OS | PostgreSQL | Aggregated report cache — `ORDER_SUMMARY` table |
+
+**A "machine" can be anything that has a network connection and can run a database**, for example:
+
+- Your own laptop (e.g. Node A runs on your Windows laptop)
+- A teammate's laptop across the room or across the country
+- A VirtualBox or VMware VM running on your laptop (the VM counts as a separate machine)
+- A WSL2 (Windows Subsystem for Linux) instance on your Windows PC
+- A cloud VM (e.g. AWS EC2, Google Cloud, DigitalOcean droplet)
+- A Raspberry Pi on your desk
+
+For this demo, the simplest setup is **three teammates, each using their own laptop** — one runs
+MariaDB, one runs MySQL, one runs PostgreSQL. Tailscale connects them all.
+
+The PHP web server is **not** a node — it is a separate machine that connects to all three nodes
+over Tailscale and acts as the middle layer between the browser and the databases.
+
+The key point: each node runs independently. If Node B goes down, Node A and Node C are still
+reachable. The system degrades gracefully rather than failing completely.
+
+### Cardinality Constraints
+
+The ERD shows two relationships between entities, each with its own participation rule.
+
+**STUDENTS → ORDERS** (`||--o{`) — labeled *"place"*
+
+| Side | Symbol | Rule |
+|---|---|---|
+| ORDERS | `\|\|` | Every order must belong to **exactly one** student — an order cannot exist without a student |
+| STUDENTS | `o{` | A student may have **zero or many** orders — students are not required to place any orders |
+
+This is called a **1:N (one-to-many)** relationship with **partial participation** on the STUDENTS
+side (they don't have to place orders) and **total participation** on the ORDERS side (every order
+must have an owner).
+
+**STUDENTS → ORDER_SUMMARY** (`||--o|`) — labeled *"summarised in"*
+
+| Side | Symbol | Rule |
+|---|---|---|
+| ORDER_SUMMARY | `\|\|` | Every summary row must reference **exactly one** student |
+| STUDENTS | `o\|` | A student may have **zero or one** summary row — the row is only created after the student's first order |
+
+This is a **1:0..1 (one to zero-or-one)** relationship. A student with no orders has no summary row.
+
+> **Important:** Neither relationship uses a real database foreign key. `ORDERS.student_id` and
+> `ORDER_SUMMARY.student_id` both point to `STUDENTS.student_id` on a completely different server
+> (Node A). The database engine cannot enforce this — PHP enforces it instead by querying Node A
+> to verify the student exists before writing to Node B or Node C.
 
 ---
 

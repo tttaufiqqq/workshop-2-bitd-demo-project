@@ -18,8 +18,8 @@ FLUSH PRIVILEGES;
 -- Step 3: Create tables
 
 CREATE TABLE IF NOT EXISTS orders (
-    id          INT AUTO_INCREMENT PRIMARY KEY,
-    user_id     INT          NOT NULL,  -- References users.id on Node A (MariaDB)
+    order_id    INT AUTO_INCREMENT PRIMARY KEY,
+    student_id  VARCHAR(20)  NOT NULL,  -- References students.student_id on Node A (MariaDB)
     item_name   VARCHAR(200) NOT NULL,
     quantity    INT          NOT NULL DEFAULT 1,
     price       DECIMAL(8,2) NOT NULL,
@@ -28,19 +28,14 @@ CREATE TABLE IF NOT EXISTS orders (
 );
 
 -- IMPORTANT NOTE FOR STUDENTS:
--- Notice that user_id here refers to the id in Node A's users table.
+-- Notice that student_id here refers to the primary key in Node A's students table.
 -- We CANNOT use a foreign key constraint across different databases/servers.
 -- In a distributed system, referential integrity must be enforced
 -- in your application code (PHP), not at the database level.
-
--- Step 4: Seed some sample data
-INSERT INTO orders (user_id, item_name, quantity, price, status) VALUES
-    (1, 'Laptop Stand',       1, 45.00, 'confirmed'),
-    (1, 'USB-C Hub',          2, 35.00, 'pending'),
-    (2, 'Mechanical Keyboard', 1, 199.00, 'confirmed'),
-    (3, 'Monitor Light Bar',  1, 89.00, 'pending');
+-- See pages/orders.php — it queries Node A first to verify the student exists.
 
 -- ============================================================
 -- Verify:
 -- SHOW TABLES;
 -- SELECT * FROM orders;
+-- To load mockup data run: db/seed_b_mysql.sql

@@ -24,23 +24,21 @@ FLUSH PRIVILEGES;
 
 -- Step 3: Create tables
 
-CREATE TABLE IF NOT EXISTS users (
-    id          INT AUTO_INCREMENT PRIMARY KEY,
+CREATE TABLE IF NOT EXISTS students (
+    student_id  VARCHAR(20)  NOT NULL PRIMARY KEY,  -- e.g. B032310001
     name        VARCHAR(100) NOT NULL,
     email       VARCHAR(150) NOT NULL UNIQUE,
-    student_id  VARCHAR(20)  NOT NULL UNIQUE,
     created_at  DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
--- Step 4: Seed some sample data
-INSERT INTO users (name, email, student_id) VALUES
-    ('Ahmad Syazwan', 'syazwan@example.com', 'B032310001'),
-    ('Nurul Aina',    'aina@example.com',    'B032310002'),
-    ('Tan Wei Ming',  'weiming@example.com', 'B032310003')
-ON DUPLICATE KEY UPDATE name = VALUES(name);
+-- NOTE: student_id is the primary key — it is the university-issued
+--       ID (e.g. B032310001) and is unique by definition.
+--       No separate auto-increment id is needed.
+--       Other nodes (B and C) reference this student_id directly.
 
 -- ============================================================
 -- Verify everything is set up:
 -- ============================================================
 -- SHOW TABLES;
--- SELECT * FROM users;
+-- SELECT * FROM students;
+-- To load mockup data run: db/seed_a_mariadb.sql

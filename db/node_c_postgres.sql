@@ -21,9 +21,10 @@ GRANT ALL ON SCHEMA public TO demo_user;
 -- Step 5: Create tables
 
 CREATE TABLE IF NOT EXISTS order_summary (
-    id              SERIAL PRIMARY KEY,       -- SERIAL = PostgreSQL auto-increment
-    user_id         INTEGER NOT NULL UNIQUE,  -- mirrors Node A users.id; UNIQUE required for ON CONFLICT (user_id)
-    user_name       VARCHAR(100),             -- denormalized for reporting speed (DR-04)
+    summary_id      SERIAL PRIMARY KEY,           -- SERIAL = PostgreSQL auto-increment
+    student_id      VARCHAR(20)   NOT NULL UNIQUE, -- mirrors Node A students.student_id
+                                                   -- UNIQUE required for ON CONFLICT (student_id)
+    user_name       VARCHAR(100),                  -- denormalized for reporting speed (DR-04)
     total_orders    INTEGER DEFAULT 0,
     total_spent     NUMERIC(10,2) DEFAULT 0.00,
     last_updated    TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -32,6 +33,7 @@ CREATE TABLE IF NOT EXISTS order_summary (
 -- NOTE: In PostgreSQL, SERIAL and AUTO_INCREMENT are the same concept,
 -- but PostgreSQL uses SERIAL (or BIGSERIAL for big tables).
 -- NUMERIC is PostgreSQL's equivalent of MySQL's DECIMAL.
+-- student_id is VARCHAR here to match the type on Node A (students.student_id).
 
 -- Step 6: Allow connections from any IP
 -- Edit pg_hba.conf and add:
@@ -40,15 +42,9 @@ CREATE TABLE IF NOT EXISTS order_summary (
 --   listen_addresses = '*'
 -- Restart PostgreSQL after these changes.
 
--- Step 7: Seed sample data
-INSERT INTO order_summary (user_id, user_name, total_orders, total_spent) VALUES
-    (1, 'Ahmad Syazwan', 2, 115.00),
-    (2, 'Nurul Aina',    1, 199.00),
-    (3, 'Tan Wei Ming',  1, 89.00)
-ON CONFLICT (id) DO NOTHING;
-
 -- ============================================================
 -- Verify:
 -- \dt
 -- SELECT * FROM order_summary;
+-- To load mockup data run: db/seed_c_postgres.sql
 -- ============================================================
