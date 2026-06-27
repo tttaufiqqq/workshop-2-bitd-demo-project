@@ -81,11 +81,10 @@ Zero occurrences of `echo $row[...]` without sanitisation.
 
 **Architecture link:** PDO prepared statements only (`context/code-standards.md`).
 
-### NFR-04 — Cross-Engine Compatibility
-**Requirement:** The same PDO interface shall be used for all three engines.
-Engine-specific differences (DSN prefix, SERIAL vs AUTO_INCREMENT,
-NUMERIC vs DECIMAL) shall be isolated to the SQL schema files and clearly
-commented.
+### NFR-04 — Cross-Engine Compatibility (Heterogeneous Support)
+**Requirement:** The same PDO interface shall be used across all three engines in this
+heterogeneous setup. Engine-specific differences (DSN prefix, SERIAL vs AUTO_INCREMENT,
+NUMERIC vs DECIMAL) shall be isolated to the SQL schema files and clearly commented.
 
 **Measure:** No `mysqli_*` or `pg_*` function calls anywhere in `pages/`
 or `includes/`.

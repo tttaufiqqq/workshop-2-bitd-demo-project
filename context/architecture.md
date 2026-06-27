@@ -1,10 +1,11 @@
-# Architecture — Distributed DB Demo
+# Architecture — Heterogeneous Distributed DB Demo
 
 ## Overview
 
-Three physical machines, each hosting one database engine, connected via
-Tailscale. One machine also runs the PHP web server. The app connects to
-all three nodes from a single `config.php`.
+Three physical machines, each hosting a **different** database engine, connected via Tailscale.
+This makes it a **heterogeneous distributed database system** — no two nodes run the same DBMS.
+One machine also runs the PHP web server. The app connects to all three nodes from a single
+`config.php`.
 
 ```
 ┌─────────────────────────────────────────────────────────┐

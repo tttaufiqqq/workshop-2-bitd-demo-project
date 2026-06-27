@@ -1,10 +1,14 @@
-# Project Overview — Distributed DB Demo
+# Project Overview — Heterogeneous Distributed DB Demo
 
 ## Purpose
 
-A teaching demo for undergraduate students building a system that spans
-**three database engines** (MariaDB, MySQL, PostgreSQL) on **separate
-physical machines** connected via **Tailscale** mesh VPN.
+A teaching demo for undergraduate students building a **heterogeneous distributed database
+system** — one that spans **three different database engines** (MariaDB, MySQL, PostgreSQL)
+on **separate physical machines** connected via **Tailscale** mesh VPN.
+
+*Heterogeneous* means each node runs a different DBMS. This is the opposite of a homogeneous
+distributed system (e.g. three MySQL servers). The engine differences are intentional teaching
+material, not incidental complexity.
 
 The goal is not a polished product. The goal is to make distributed
 database architecture *visible and debuggable* at every layer.
@@ -23,7 +27,7 @@ database architecture *visible and debuggable* at every layer.
 
 ## System Name
 
-**Distributed DB Demo** — Student Order System
+**Heterogeneous Distributed DB Demo** — Student Order System
 
 ## Domain
 

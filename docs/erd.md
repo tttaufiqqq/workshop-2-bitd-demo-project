@@ -1,7 +1,9 @@
 # Entity Relationship Diagram
 
-This project spans **three separate databases** across three nodes. There are no foreign key
-constraints between nodes — referential integrity is enforced in application code (PHP).
+This project implements a **heterogeneous distributed database** system spanning **three separate
+databases** across three nodes — each node runs a different database engine (MariaDB, MySQL,
+PostgreSQL). There are no foreign key constraints between nodes — referential integrity is
+enforced in application code (PHP).
 
 Dashed lines represent logical (cross-node) relationships. Solid lines represent real FK constraints.
 

@@ -15,7 +15,7 @@ Last updated: 2026-06-27
 | Register page (Node A) | ✅ Done | INSERT with prepared statement |
 | Orders page (Node B) | ✅ Done | Three-node write: verify A → insert B → sync C |
 | Reports page (Node C) | ✅ Done | Cross-node join in PHP |
-| Tailscale setup guide | ✅ Done | `setup/tailscale_guide.md` |
+| Tailscale setup guide | ✅ Done | `docs/tailscale_guide.md` |
 | README.md | ✅ Done | Main student-facing guide |
 | CLAUDE.md | ✅ Done | Tailored for this project |
 | docs/ suite | ✅ Done | All docs written including troubleshooting |

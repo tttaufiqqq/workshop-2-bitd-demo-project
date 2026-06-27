@@ -1,8 +1,16 @@
-# Distributed DB Demo — Student Order System
+<p align="center">
+  <img src="docs/LogoUTeM.png" alt="Universiti Teknikal Malaysia Melaka (UTeM)" width="260">
+</p>
 
-A PHP demo project showing how to build a system that reads and writes across
-**three separate database engines** (MariaDB, MySQL, PostgreSQL) running on
-**different machines** connected via **Tailscale**.
+# Heterogeneous Distributed DB Demo — Student Order System
+
+A PHP demo project showing how to build a **heterogeneous distributed database system** that
+reads and writes across **three different database engines** (MariaDB, MySQL, PostgreSQL) running
+on **different machines** connected via **Tailscale**.
+
+> **Heterogeneous** means each node runs a *different* DBMS — as opposed to a homogeneous
+> distributed system where every node runs the same engine. This project uses MariaDB, MySQL,
+> and PostgreSQL deliberately so students see how engines differ in syntax, drivers, and config.
 
 > 📺 **Video walkthrough:** _link coming soon_ <!-- TODO: replace with YouTube URL once uploaded -->
 
@@ -68,7 +76,7 @@ must have an owner).
 This is a **1:0..1 (one to zero-or-one)** relationship. A student with no orders has no summary row.
 
 > **Important:** Neither relationship uses a real database foreign key. `ORDERS.student_id` and
-> `ORDER_SUMMARY.student_id` both point to `STUDENTS.student_id` on a completely different server
+> `ORDER_SUMMARY.student_id` both reference `STUDENTS.student_id` on a completely different server
 > (Node A). The database engine cannot enforce this — PHP enforces it instead by querying Node A
 > to verify the student exists before writing to Node B or Node C.
 
@@ -145,7 +153,7 @@ If `ping` gets replies, the **network is working** and PHP will be able to open 
 connection to that machine. If `ping` times out, the machine is either offline, not connected
 to Tailscale, or has a firewall blocking ICMP — fix this before touching `config.php`.
 
-> Full step-by-step Tailscale setup: [`setup/tailscale_guide.md`](setup/tailscale_guide.md)
+> Full step-by-step Tailscale setup: [`docs/tailscale_guide.md`](docs/tailscale_guide.md)
 
 ---
 
@@ -153,7 +161,7 @@ to Tailscale, or has a firewall blocking ICMP — fix this before touching `conf
 
 ### 1. Install and Connect Tailscale
 
-Follow the full guide: [`setup/tailscale_guide.md`](setup/tailscale_guide.md)
+Follow the full guide: [`docs/tailscale_guide.md`](docs/tailscale_guide.md)
 
 After setup, every machine should be able to ping the others:
 ```bash
