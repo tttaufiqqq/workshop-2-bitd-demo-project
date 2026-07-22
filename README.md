@@ -2,11 +2,11 @@
   <img src="docs/LogoUTeM.png" alt="Universiti Teknikal Malaysia Melaka (UTeM)" width="260">
 </p>
 
-# Heterogeneous Distributed DB Demo — Student Order System
+# Heterogeneous Distributed Database Architecture Demo — Student Order System
 
 A PHP demo project showing how to build a **heterogeneous distributed database system** that
 reads and writes across **three different database engines** (MariaDB, MySQL, PostgreSQL) running
-on **different machines** connected via **Tailscale**.
+on **different machines** connected via **Tailscale** for BITU3923 - Worksshop 2 at UTeM.
 
 > **Heterogeneous** means each node runs a *different* DBMS — as opposed to a homogeneous
 > distributed system where every node runs the same engine. This project uses MariaDB, MySQL,
